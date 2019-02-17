@@ -7,7 +7,7 @@ Alignment between the coordinate system of a point cloud and the global coordina
 <img src="img.png" align="center" height="500" width="1000"><br>
 
 ## Compile
-* Set "YOUR" PCL Build DIR in CMakeList.txt e.g: /opt/pcl-1.8.1/build and saved.
+* Set "YOUR" PCL Build DIR in CMakeList.txt e.g: /opt/pcl-1.8.1/build and save it.
 * Create a "build" folder
 
 in the main folder:
