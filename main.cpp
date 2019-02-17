@@ -186,7 +186,7 @@ int main(int argc, char **argv){
          viewer->spin();
   }
   
-  pcl::io::savePCDFileBinary("cloud_alignmed",*output_cloud);
+  pcl::io::savePCDFileBinary("cloud_alignmed.pcd",*output_cloud);
   
   return 0;
   
