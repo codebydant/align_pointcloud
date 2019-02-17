@@ -19,11 +19,9 @@ in the main folder:
         	 
 ### Test
 
-	  cd /build/bin
-	  ./pcl-visualizer <pcd file> 
+	cd /build/bin
+	./pcl-visualizer <pcd file> 
   	./pcl-visualizer <ply file> 
-  	./pcl-visualizer <txt file> 
-  	./pcl-visualizer <xyz file> 
-  
+
 
 
