@@ -19,7 +19,7 @@ in the main folder:
         	 
 ### Test
 
-	cd /build/bin
+	cd /build
 	./alignmentCloud <pcd file> 
   	./alignmentCloud <ply file> 
 
