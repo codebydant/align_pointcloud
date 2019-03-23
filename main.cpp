@@ -7,6 +7,10 @@
 #include <pcl/console/print.h>
 #include <pcl/console/parse.h>
 #include <pcl/console/time.h>
+#include <pcl/features/feature.h>
+#include <pcl/point_types.h>
+#include <pcl/features/normal_3d.h>
+#include <pcl/features/normal_3d.h>
 
 #include <iostream>
 
@@ -91,53 +95,195 @@ int main(int argc, char **argv){
   input_cloud->width = (int) input_cloud->points.size ();
   input_cloud->height = 1;
   input_cloud->is_dense = true;
+  
+  /* ----------------------------------------------------------------------- */
+  /* ----------------------------------------------------------------------- */
+  
+  Eigen::Matrix<float, 3, 1> obj_vec, xy_vec, axis;
 
+  xy_vec[0] = 0.0;
+  xy_vec[1] = 0.0;
+  xy_vec[2] = 1.0;
+  
+  std::cout << "\nXY vector:\n" << xy_vec << std::endl;
+  
+  /*
   pcl::ModelCoefficients::Ptr coefficients (new pcl::ModelCoefficients);
   pcl::PointIndices::Ptr floor_inliers (new pcl::PointIndices);
   pcl::SACSegmentation<pcl::PointXYZRGB> seg;
   seg.setOptimizeCoefficients (true);
   seg.setModelType (pcl::SACMODEL_PLANE);
   seg.setMethodType (pcl::SAC_RANSAC);
-  seg.setDistanceThreshold(100);
+  seg.setDistanceThreshold(150);
   seg.setInputCloud (input_cloud);
   seg.segment (*floor_inliers, *coefficients);
-
-  Eigen::Matrix<float, 1, 3> normal_vector_plane_tree, normal_vector_plane_xy, rotation_vector;
-
-  normal_vector_plane_tree[0] = coefficients->values[0];
-  normal_vector_plane_tree[1] = coefficients->values[1];
-  normal_vector_plane_tree[2] = coefficients->values[2];
-
-  std::cout << "\nnormal vector plane tree:\n" << normal_vector_plane_tree << std::endl;
-
-  normal_vector_plane_xy[0] = 0.0;
-  normal_vector_plane_xy[1] = 0.0;
-  normal_vector_plane_xy[2] = 1.0;
-
-  std::cout << "\nnormal vector plane XY:\n" << normal_vector_plane_xy << std::endl;
-
-  rotation_vector = normal_vector_plane_tree.cross(normal_vector_plane_xy);
-  std::cout << "\nrotation axis vector:\n "<< rotation_vector << std::endl;
+  */
   
-  std::cout << "\nrotation axis module:\n "<< rotation_vector.norm() << std::endl;
-  
-  rotation_vector /= rotation_vector.norm();
-  std::cout << "\nrotation axis normalized:\n "<< rotation_vector << std::endl;
-  
-  std::cout << "\nrotation axis normalized module:\n "<< rotation_vector.norm() << std::endl;
+  Eigen::Vector4f centroid;
+  Eigen::Matrix3f covariance_matrix;
 
-  float theta = acos((normal_vector_plane_xy.dot(normal_vector_plane_tree))/std::sqrt(std::pow(coefficients->values[0],2) +
-                                                                                      std::pow(coefficients->values[1],2) + 
-                                                                                      std::pow(coefficients->values[2],2)));
+  // Extract the eigenvalues and eigenvectors
+  Eigen::Vector3f eigen_values;
+  Eigen::Matrix3f eigen_vectors;
+
+  pcl::compute3DCentroid(*input_cloud,centroid);
+  
+ 
+    
+  // Compute the 3x3 covariance matrix
+  pcl::computeCovarianceMatrix (*input_cloud, centroid, covariance_matrix);
+  pcl::eigen33 (covariance_matrix, eigen_vectors, eigen_values);
+  
+   /*
+  
+  pcl::PointXYZ centroidXYZ;
+  centroidXYZ.getVector4fMap() = centroid;
+  */
+  //pcl::PointXYZ Point1 = pcl::PointXYZ((eigen_vectors.col(0)(0)), (eigen_vectors.col(0)(1)), (eigen_vectors.col(0)(2)));
+  pcl::PointXYZ Point1 = pcl::PointXYZ((centroid(0)), (centroid(1)), (centroid(2)));
+
+  
+  
+  //obj_vec[0] = coefficients->values[0];
+  //obj_vec[1] = coefficients->values[1];
+  //obj_vec[2] = coefficients->values[2];
+ 
+  
+  Eigen::Vector4f centroid_arrow;
+  centroid_arrow[0] = centroid(0);
+  centroid_arrow[1] = centroid(1)+2;
+  centroid_arrow[2] = centroid(2);
+  
+
+  // Create the normal estimation class, and pass the input dataset to it
+  pcl::NormalEstimation<pcl::PointXYZRGB, pcl::Normal> ne;
+  ne.setInputCloud (input_cloud);
+
+  // Create an empty kdtree representation, and pass it to the normal estimation object.
+  // Its content will be filled inside the object, based on the given input dataset (as no other search surface is given).
+  pcl::search::KdTree<pcl::PointXYZRGB>::Ptr tree (new pcl::search::KdTree<pcl::PointXYZRGB> ());
+  ne.setSearchMethod (tree);
+
+  // Output datasets
+  pcl::PointCloud<pcl::Normal>::Ptr cloud_normals (new pcl::PointCloud<pcl::Normal>);
+
+  // Use all neighbors in a sphere of radius 3cm
+  ne.setRadiusSearch (0.03);
+
+  // Compute the features
+  ne.compute (*cloud_normals);
+  
+
+  // Create a set of indices to be used. For simplicity, we're going to be using the first 10% of the points in cloud
+  std::vector<int> indices (floor (input_cloud->points.size ()));
+  for (size_t i = 0; i < indices.size (); ++i) indices[i] = i;
+  
+  Eigen::Vector4f plane_parameters;
+  float curvature;
+  ne.computePointNormal (*input_cloud, indices, plane_parameters, curvature);
+
+  // cloud_normals->points.size () should have the same size as the input cloud->points.size ()*
+  
+  
+  //obj_vec[0] = centroid[0];
+  //obj_vec[1] = centroid[1];
+  //obj_vec[2] = centroid[2];
+  
+  //obj_vec[0] = (centroid_arrow[0] - centroid[0]);
+  //obj_vec[1] = -(centroid_arrow[1] - centroid[1]);
+  //obj_vec[2] = (centroid_arrow[2] - centroid[2]);
+  
+  //obj_vec[0] = (centroid[0] + eigen_vectors.col(0)(0));
+  //obj_vec[1] = -(centroid[1] + eigen_vectors.col(0)(1));
+  //obj_vec[2] = (centroid[2] + eigen_vectors.col(0)(2));
+  
+  // http://pointclouds.org/documentation/tutorials/normal_estimation.php
+  
+  //obj_vec[0] = (eigen_vectors.col(0)(0));
+  //obj_vec[1] = -(eigen_vectors.col(0)(1));
+  //obj_vec[2] = (eigen_vectors.col(0)(2));
+  
+  obj_vec[0] = (plane_parameters[0]);
+  if(plane_parameters[1]<0){
+       obj_vec[1] = -(plane_parameters[1]);
+  }else{
+      obj_vec[1] = (plane_parameters[1]);
+  }
+
+  obj_vec[2] = (plane_parameters[2]);
+  
+  
+  
+  //obj_vec[0] = 2;
+  //obj_vec[1] = 2;
+  //obj_vec[2] = 2;
+  
+  std::cout << "\nobjec vector:\n" << obj_vec << std::endl;
+
+  /* ----------------------------------------------------------------------- */
+  /* ----------------------------------------------------------------------- */
+
+  axis = obj_vec.cross(xy_vec); 
+  std::cout << "\naxis:\n "<< axis << std::endl;
+  
+  Eigen::Matrix<float, 3, 1> crooss_test;
+  
+  float dot_test = axis.dot(obj_vec);
+  std::cout << "\naxis vector test (dot=0):\n "<< dot_test << std::endl;
+  dot_test = axis.dot(xy_vec);
+  std::cout << "\naxis vector test (dot=0):\n "<< dot_test << std::endl;
+  
+  std::cout << "\naxis vector module:\n "<< axis.norm() << std::endl;
+  
+  axis /= axis.norm();
+  std::cout << "\naxis normalized:\n "<< axis << std::endl;
+  
+  std::cout << "\naxis normalized module:\n "<< axis.norm() << std::endl;
+  
+  /* ----------------------------------------------------------------------- */
+  /* ----------------------------------------------------------------------- */
+  
+  /*
+
+  float theta = acos((normal_vector_plane_tree.dot(normal_vector_plane_xy))/std::sqrt(std::pow(normal_vector_plane_tree[0],2) +
+                                                                                      std::pow(normal_vector_plane_tree[1],2) + 
+                                                                                      std::pow(normal_vector_plane_tree[2],2)));
+  */
                                                                                       
-  std::cout << "\nrotation angle(rad): " << theta << std::endl;  
-
-  Eigen::Affine3f transform = Eigen::Affine3f::Identity();
-  transform.rotate(Eigen::AngleAxisf(theta, rotation_vector));
+  float theta = acos((obj_vec.dot(xy_vec))/std::sqrt(std::pow(obj_vec[0],2) + std::pow(obj_vec[1],2) + std::pow(obj_vec[2],2)));                                                                                    
+                                                                                      
+  std::cout << "\nangle(rad): " << theta << std::endl;  
+  float theta_deg = pcl::rad2deg(theta);
   
+  std::cout << "\nangle(deg): " << theta_deg << std::endl; 
+  
+  /* ----------------------------------------------------------------------- */
+  /* ----------------------------------------------------------------------- */
+  
+  Eigen::Affine3f transform = Eigen::Affine3f::Identity();
+
+  transform.translation() << 0.0, 0.0, 0.0;
+  transform.rotate(Eigen::AngleAxisf(theta, axis));
+  
+  //Eigen::Matrix3f rotation_matrix;
+  
+  //rotation_matrix = Eigen::AngleAxisf(theta, axis); 
+    
+  //std::cout << "\nTransformation matrix: " << "\n" << rotation_matrix.matrix() << std::endl;
   std::cout << "\nTransformation matrix: " << "\n" << transform.matrix() << std::endl;
+  
+  /* ----------------------------------------------------------------------- */
+  /* ----------------------------------------------------------------------- */ 
+  
+  Eigen::Matrix<float, 3, 1> vec_transformed;
+  
+  //vec_transformed = rotation_matrix * obj_vec;  
+
+  //std::cout << "\nPoint transformed: " << "\n" << vec_transformed << std::endl;
+  
   pcl::transformPointCloud (*input_cloud, *output_cloud, transform);
   
+
   
    /*************************
   PCL VISUALIZER
@@ -153,10 +299,25 @@ int main(int argc, char **argv){
   viewer->createViewPort(0.5, 0.0, 1.0, 1.0, PORT2);
   viewer->setBackgroundColor (0, 0, 0, PORT2);
   viewer->addText("ALIGNMENT AXIS", 10, 10, "PORT2", PORT2);
+  
+  viewer->removeAllPointClouds(0);
+
+  if(input_cloud->points[0].r <= 0 and input_cloud->points[0].g <= 0 and input_cloud->points[0].b<= 0 ){
+      pcl::visualization::PointCloudColorHandlerCustom<pcl::PointXYZRGB> color_handler(input_cloud,255,255,0);      
+      viewer->addPointCloud(input_cloud,color_handler,"Original",PORT1);
+  }else{
+      viewer->addPointCloud(input_cloud,"Original",PORT1);
+  }
+  
+  if(output_cloud->points[0].r <= 0 and output_cloud->points[0].g <= 0 and output_cloud->points[0].b<= 0 ){
+      pcl::visualization::PointCloudColorHandlerCustom<pcl::PointXYZRGB> color_handler(output_cloud,255,255,0);
+      viewer->addPointCloud(output_cloud,color_handler,"transform1 rvec",PORT2);
+  }else{
+      viewer->addPointCloud(output_cloud,"transform1 rvec",PORT2);
+  }
+  
 
  
-  viewer->addPointCloud(input_cloud, "original", PORT1);
-  viewer->addPointCloud(output_cloud, "transform1 rvec", PORT2);
 
   pcl::PointXYZ p1, p2, p3;
   p1.getArray3fMap() << 1, 0, 0;
@@ -172,11 +333,37 @@ int main(int argc, char **argv){
   viewer->addText3D("x", p1, 0.2, 1, 0, 0, "x_",PORT2);
   viewer->addText3D("y", p2, 0.2, 0, 1, 0, "y_",PORT2);
   viewer->addText3D ("z", p3,0.2, 0, 0, 1, "z_",PORT2);
+  
+  pcl::PointXYZ origen;
+  origen.x = 0;
+  origen.y = 0;
+  origen.z = 0;
+  
+  Eigen::Vector4f obj_vec_transformed;
+  float curvature_obj_vec;
+  ne.computePointNormal (*output_cloud, indices, obj_vec_transformed, curvature_obj_vec);
+  
+  pcl::PointXYZ xy_vecXYZ = pcl::PointXYZ(xy_vec(0), xy_vec(1), xy_vec(2));
+  pcl::PointXYZ obj_vecXYZ = pcl::PointXYZ(obj_vec(0), obj_vec(1), obj_vec(2));
+  pcl::PointXYZ axis_vecXYZ = pcl::PointXYZ(axis(0), axis(1), axis(2));
+  pcl::PointXYZ vec_transformedXYZ = pcl::PointXYZ(obj_vec_transformed(0), obj_vec_transformed(1), obj_vec_transformed(2));
+  
+  pcl::PointXYZ origen_desf;
+  origen_desf.x = 0;
+  origen_desf.y = 0;
+  origen_desf.z = 0;
+  
+    
+  
+  viewer->addArrow(xy_vecXYZ,origen , 255.0, 255.0, 0.0, false, "Arrow1",PORT1);
+  viewer->addArrow(obj_vecXYZ,origen_desf , 0.0, 255.0, 0.0, false, "Arrow2",PORT1);
+  viewer->addArrow(axis_vecXYZ,origen , 0.0, 0.0, 255.0, false, "Arrow3",PORT1);
+  viewer->addArrow(vec_transformedXYZ,origen , 255.0, 255.0, 255.0, false, "Arrow4",PORT2);
+
+  //viewer->addLine<pcl::PointXYZRGB> (Point1, eigen_vectors, "line");
 
  
   viewer->setPosition(0,0);
-  viewer->addCoordinateSystem();
-
   viewer->initCameraParameters();
   viewer->resetCamera();
 
@@ -185,8 +372,7 @@ int main(int argc, char **argv){
   while(!viewer->wasStopped ()) {
          viewer->spin();
   }
-  
-  pcl::io::savePCDFileBinary("cloud_alignmed.pcd",*output_cloud);
+
   
   return 0;
   
