@@ -6,9 +6,7 @@ Alignment between the coordinate system of a point cloud and the global coordina
 
 * .pcd 
 * .ply
-* .txt
-* .xyz
-
+*
 
 ## Example
 
