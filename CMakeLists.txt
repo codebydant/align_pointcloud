@@ -46,8 +46,8 @@ set(CMAKE_MODULE_PATH ${PCL_DIR}/../cmake/Modules)
 #set(EXECUTABLE_OUTPUT_PATH ${CMAKE_CURRENT_BINARY_DIR}/bin)
 
 # set turn off the output rule messages of cmake
-set_property(GLOBAL PROPERTY RULE_MESSAGES OFF)
-set_property(GLOBAL PROPERTY USE_FOLDERS ON)
+##set_property(GLOBAL PROPERTY RULE_MESSAGES OFF)
+##set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
 #SET(LIBRARIES_EXTERNAL_SOURCE_DIR ${PROJECT_SOURCE_DIR}/libraries CACHE PATH "Libs")
 #add_subdirectory(${LIBRARIES_EXTERNAL_SOURCE_DIR} libraries)
