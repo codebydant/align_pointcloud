@@ -49,6 +49,9 @@ typedef pcl::PointCloud<PointT> PointCloudT;
 using namespace pcl;
 
 int main (int argc,char* argv[]){
+     
+ //This code is taken from: http://www.pcl-users.org/axis-alignment-td4027228i20.html    
+     
 // The point clouds we will be using
 
  /////////////////////////////// Test //////////////////////
