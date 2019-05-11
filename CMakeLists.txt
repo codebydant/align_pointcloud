@@ -113,14 +113,18 @@ link_directories(${PCL_LIBRARY_DIRS}
 ##############################################################################
 # SOURCE CODE
 ##############################################################################
-set(MAIN_SOURCE "/src/main.cpp")
+set(MAIN_SOURCE "src/main.cpp")
+set(MAIN_SOURCE2 "src/main_align2.cpp")
 
 ##############################################################################
 # EXECUTABLES
 ##############################################################################
 add_executable(${PROJECT_NAME}               
-               ${MAIN_SOURCE}
-               #/src/main_align2.cpp
+               ${MAIN_SOURCE}               
+               )
+add_executable(align_cloud2               
+               ${MAIN_SOURCE2}
+               
                )
                
 ##############################################################################
