@@ -13,9 +13,9 @@ message("\n" "=========================================")
 message("Project: ${PROJECT_NAME} ")
 message("=========================================")
 
-#set(CMAKE_C_COMPILER /usr/bin/gcc)
-#set(CMAKE_CXX_COMPILER /usr/bin/g++)
-#set(QT_QMAKE_EXECUTABLE "/usr/lib/x86_64-linux-gnu/qt5/bin/qmake")
+# set(CMAKE_C_COMPILER /usr/bin/gcc)
+# set(CMAKE_CXX_COMPILER /usr/bin/g++)
+# set(QT_QMAKE_EXECUTABLE "/usr/lib/x86_64-linux-gnu/qt5/bin/qmake")
 
 # set the include directive in the same project folder
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
@@ -25,7 +25,6 @@ set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
 # set corresponding package directories
 set(PCL_DIR /opt/pcl-1.8.1/build)
-
 
 #set the CMP0074 policy to old behavior (disable warnings) (CMake 3.12.0-rc1)
 if(${CMAKE_VERSION} MATCHES 3.12.0)
@@ -67,18 +66,18 @@ message("***********************")
 message("point cloud library pkg")
 message("***********************")
 
-find_package(PCL 1.8 PATHS ${PCL_DIR})
+find_package(PCL 1.8 PATHS ${PCL_DIR} QUIET)
 if(PCL_FOUND)
    message(STATUS "PCL status:")
    message(STATUS "    version: ${PCL_VERSION}")
-    message(STATUS "    pcl directorie: ${PCL_INCLUDE_DIRS}")
+    message(STATUS "   directorie: ${PCL_INCLUDE_DIRS}")
 else()
     message(WARNING "   PCL 1.8 not found, attempting 1.7...")
     find_package(PCL 1.7 REQUIRED)
     if(PCL_FOUND)
         message(STATUS "PCL status:")
         message(STATUS "    version: ${PCL_VERSION}")
-        message(STATUS "    pcl directorie: ${PCL_INCLUDE_DIRS}")
+        message(STATUS "    directorie: ${PCL_INCLUDE_DIRS}")
     else()
         message(FATAL_ERROR "    ERROR: PCL minimum required version 1.7. Not found")
     endif()
