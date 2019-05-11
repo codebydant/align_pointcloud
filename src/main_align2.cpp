@@ -49,6 +49,9 @@ typedef pcl::PointCloud<PointT> PointCloudT;
 using namespace pcl;
 
 int main (int argc,char* argv[]){
+     
+ //This code is taken from: http://www.pcl-users.org/axis-alignment-td4027228i20.html    
+     
 // The point clouds we will be using
 
  /////////////////////////////// Test //////////////////////
@@ -144,13 +147,13 @@ int main (int argc,char* argv[]){
     std::cout << "The centroid is x " << xyz_centroid[0] << " y : "<< xyz_centroid[1] << " z " << xyz_centroid[2] << std::endl;
     Eigen::Matrix4f translationTransform = Eigen::Matrix4f::Identity();
     translationTransform = Eigen::Matrix4f::Identity();
-    //translationTransform (0,3) = - xyz_centroid[0];
-    //translationTransform (1,3) = - xyz_centroid[1];
-    //translationTransform (2,3) = - xyz_centroid[2];
+    translationTransform (0,3) = - xyz_centroid[0];
+    translationTransform (1,3) = - xyz_centroid[1];
+    translationTransform (2,3) = - xyz_centroid[2];
 
-    translationTransform (0,3) = 0;
-    translationTransform (1,3) = 0;
-    translationTransform (2,3) = 0;
+//    translationTransform (0,3) = 0;
+//    translationTransform (1,3) = 0;
+//    translationTransform (2,3) = 0;
 
      pcl::transformPointCloud (*centeredcloud, *final, translationTransform);
     pcl::visualization::CloudViewer viewer ("Point Cloud Viewer");
