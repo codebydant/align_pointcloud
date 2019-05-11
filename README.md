@@ -18,9 +18,9 @@ Alignment between the coordinate system of a point cloud and the global coordina
 
 in the main folder:
 
-	- cd /build  
-	- cmake ../
-    - make
+	cd /build  
+	cmake ../
+    	make
        
         	 
 ### Test
