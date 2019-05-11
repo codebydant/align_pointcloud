@@ -4,7 +4,7 @@
 cmake_minimum_required(VERSION 3.5.1 FATAL_ERROR)
 
 # set project name
-project(alignmentCloud VERSION 1.0.0 LANGUAGES CXX)
+project(align_cloud VERSION 1.0.0 LANGUAGES CXX)
 
 # set build type = Release mode
 set(CMAKE_BUILD_TYPE Release)
@@ -135,6 +135,11 @@ target_link_libraries(${PROJECT_NAME}
                       ${Boost_LIBRARIES}
                                
                       )#Eigen3::Eigen)
+                      
+target_link_libraries(align_cloud2                    
+                      ${PCL_LIBRARIES}                  
+                      ${Boost_LIBRARIES}                               
+                      )
                       
 
 message("=========================================")
