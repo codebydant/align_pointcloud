@@ -26,8 +26,8 @@ in the main folder:
 ### Test
 
 	cd /build
-	./alignmentCloud <pcd file> 
-  	./alignmentCloud <ply file> 
+	./align_cloud <pcd file> 
+  	./align_cloud2 <pcd file> 
 
 
 
