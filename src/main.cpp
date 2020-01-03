@@ -287,7 +287,8 @@ int main(int argc, char **argv){
   
    /*************************
   PCL VISUALIZER
-  **************************/
+  **************************/  
+  vtkObject::GlobalWarningDisplayOff(); // Disable vtk render warning
   boost::shared_ptr<pcl::visualization::PCLVisualizer> viewer (new pcl::visualization::PCLVisualizer ("VISUALIZER"));
 
   int PORT1 = 0;
